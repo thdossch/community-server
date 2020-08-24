@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { DATA_TYPE_BINARY } from '../src/util/ContentTypes';
 import streamifyArray from 'streamify-array';
+import { TYPE } from '../src/util/MetadataTypes';
 import yargs from 'yargs';
 import {
   AcceptPreferenceParser,
@@ -13,6 +14,7 @@ import {
   QuadToTurtleConverter,
   Representation,
   RepresentationConvertingStore,
+  RepresentationMetadata,
   SimpleAclAuthorizer,
   SimpleBodyParser,
   SimpleCredentialsExtractor,
@@ -114,16 +116,15 @@ const aclSetup = async(): Promise<void> => {
     acl:mode        acl:Control;
     acl:accessTo    <${base}>;
     acl:default     <${base}>.`;
+  const id = await aclManager.getAcl({ path: base });
+  const metadata = new RepresentationMetadata(id.path);
+  metadata.add(TYPE, 'text/turtle');
   await store.setRepresentation(
-    await aclManager.getAcl({ path: base }),
+    id,
     {
       dataType: DATA_TYPE_BINARY,
       data: streamifyArray([ acl ]),
-      metadata: {
-        raw: [],
-        profiles: [],
-        contentType: 'text/turtle',
-      },
+      metadata,
     },
   );
 };

@@ -1,5 +1,6 @@
 import { BinaryRepresentation } from '../representation/BinaryRepresentation';
 import { BodyParser } from './BodyParser';
+import { CONTENT_TYPE } from '../../util/MetadataTypes';
 import { DATA_TYPE_BINARY } from '../../util/ContentTypes';
 import { HttpRequest } from '../../server/HttpRequest';
 import { RepresentationMetadata } from '../representation/RepresentationMetadata';
@@ -25,11 +26,8 @@ export class SimpleBodyParser extends BodyParser {
 
     const mediaType = contentType.split(';')[0];
 
-    const metadata: RepresentationMetadata = {
-      raw: [],
-      profiles: [],
-      contentType: mediaType,
-    };
+    const metadata = new RepresentationMetadata();
+    metadata.add(CONTENT_TYPE, mediaType);
 
     return {
       dataType: DATA_TYPE_BINARY,

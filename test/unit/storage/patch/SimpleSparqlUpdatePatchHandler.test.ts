@@ -1,6 +1,8 @@
 import arrayifyStream from 'arrayify-stream';
+import { CONTENT_TYPE } from '../../../../src/util/MetadataTypes';
 import { Lock } from '../../../../src/storage/Lock';
 import { Quad } from 'rdf-js';
+import { RepresentationMetadata } from '../../../../src/ldp/representation/RepresentationMetadata';
 import { ResourceLocker } from '../../../../src/storage/ResourceLocker';
 import { ResourceStore } from '../../../../src/storage/ResourceStore';
 import { SimpleSparqlUpdatePatchHandler } from '../../../../src/storage/patch/SimpleSparqlUpdatePatchHandler';
@@ -73,8 +75,9 @@ describe('A SimpleSparqlUpdatePatchHandler', (): void => {
     expect(setParams[0]).toEqual({ path: 'path' });
     expect(setParams[1]).toEqual(expect.objectContaining({
       dataType: DATA_TYPE_QUAD,
-      metadata: { raw: [], profiles: [], contentType: CONTENT_TYPE_QUADS },
+      metadata: expect.any(RepresentationMetadata),
     }));
+    expect(setParams[1].metadata.get(CONTENT_TYPE)?.value).toEqual(CONTENT_TYPE_QUADS);
     await expect(arrayifyStream(setParams[1].data)).resolves.toBeRdfIsomorphic(quads);
   };
 

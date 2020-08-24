@@ -1,8 +1,10 @@
 import { AcceptPreferenceParser } from '../../src/ldp/http/AcceptPreferenceParser';
 import arrayifyStream from 'arrayify-stream';
+import { CONTENT_TYPE } from '../../src/util/MetadataTypes';
 import { DATA_TYPE_BINARY } from '../../src/util/ContentTypes';
 import { HttpRequest } from '../../src/server/HttpRequest';
 import { Readable } from 'stream';
+import { RepresentationMetadata } from '../../src/ldp/representation/RepresentationMetadata';
 import { SimpleBodyParser } from '../../src/ldp/http/SimpleBodyParser';
 import { SimpleRequestParser } from '../../src/ldp/http/SimpleRequestParser';
 import { SimpleTargetExtractor } from '../../src/ldp/http/SimpleTargetExtractor';
@@ -36,13 +38,10 @@ describe('A SimpleRequestParser with simple input parsers', (): void => {
       body: {
         data: expect.any(Readable),
         dataType: DATA_TYPE_BINARY,
-        metadata: {
-          contentType: 'text/turtle',
-          profiles: [],
-          raw: [],
-        },
+        metadata: expect.any(RepresentationMetadata),
       },
     });
+    expect(result.body?.metadata.get(CONTENT_TYPE)?.value).toEqual('text/turtle');
 
     await expect(arrayifyStream(result.body!.data)).resolves.toEqual(
       [ '<http://test.com/s> <http://test.com/p> <http://test.com/o>.' ],

@@ -1,9 +1,11 @@
 import { Algebra } from 'sparqlalgebrajs';
 import { BaseQuad } from 'rdf-js';
+import { CONTENT_TYPE } from '../../util/MetadataTypes';
 import { defaultGraph } from '@rdfjs/data-model';
 import { PatchHandler } from './PatchHandler';
 import { Readable } from 'stream';
 import { Representation } from '../../ldp/representation/Representation';
+import { RepresentationMetadata } from '../../ldp/representation/RepresentationMetadata';
 import { ResourceIdentifier } from '../../ldp/representation/ResourceIdentifier';
 import { ResourceLocker } from '../ResourceLocker';
 import { ResourceStore } from '../ResourceStore';
@@ -65,14 +67,12 @@ export class SimpleSparqlUpdatePatchHandler extends PatchHandler {
     });
     store.removeQuads(deletes);
     store.addQuads(inserts);
+    const metadata = new RepresentationMetadata(input.identifier.path);
+    metadata.set(CONTENT_TYPE, CONTENT_TYPE_QUADS);
     const representation: Representation = {
       data: store.match() as Readable,
       dataType: DATA_TYPE_QUAD,
-      metadata: {
-        raw: [],
-        profiles: [],
-        contentType: CONTENT_TYPE_QUADS,
-      },
+      metadata,
     };
     await this.source.setRepresentation(input.identifier, representation);
 

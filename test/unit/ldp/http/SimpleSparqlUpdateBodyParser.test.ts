@@ -1,5 +1,6 @@
 import { Algebra } from 'sparqlalgebrajs';
 import arrayifyStream from 'arrayify-stream';
+import { CONTENT_TYPE } from '../../../../src/util/MetadataTypes';
 import { DATA_TYPE_BINARY } from '../../../../src/util/ContentTypes';
 import { HttpRequest } from '../../../../src/server/HttpRequest';
 import { SimpleSparqlUpdateBodyParser } from '../../../../src/ldp/http/SimpleSparqlUpdateBodyParser';
@@ -35,11 +36,7 @@ describe('A SimpleSparqlUpdateBodyParser', (): void => {
       namedNode('http://test.com/o'),
     ) ]);
     expect(result.dataType).toBe(DATA_TYPE_BINARY);
-    expect(result.metadata).toEqual({
-      raw: [],
-      profiles: [],
-      contentType: 'application/sparql-update',
-    });
+    expect(result.metadata.get(CONTENT_TYPE)?.value).toEqual('application/sparql-update');
 
     // Workaround for Node 10 not exposing objectMode
     expect((await arrayifyStream(result.data)).join('')).toEqual(

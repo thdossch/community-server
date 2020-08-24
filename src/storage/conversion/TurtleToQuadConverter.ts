@@ -1,4 +1,5 @@
 import { checkRequest } from './ConversionUtil';
+import { CONTENT_TYPE } from '../../util/MetadataTypes';
 import { PassThrough } from 'stream';
 import { Representation } from '../../ldp/representation/Representation';
 import { RepresentationMetadata } from '../../ldp/representation/RepresentationMetadata';
@@ -20,7 +21,8 @@ export class TurtleToQuadConverter extends RepresentationConverter {
   }
 
   private turtleToQuads(turtle: Representation, baseIRI: string): Representation {
-    const metadata: RepresentationMetadata = { ...turtle.metadata, contentType: CONTENT_TYPE_QUADS };
+    const metadata = new RepresentationMetadata(turtle.metadata.identifier, turtle.metadata.quads());
+    metadata.set(CONTENT_TYPE, CONTENT_TYPE_QUADS);
 
     // Catch parsing errors and emit correct error
     // Node 10 requires both writableObjectMode and readableObjectMode

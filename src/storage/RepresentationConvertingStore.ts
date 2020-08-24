@@ -1,4 +1,5 @@
 import { Conditions } from './Conditions';
+import { CONTENT_TYPE } from '../util/MetadataTypes';
 import { matchingMediaType } from '../util/Util';
 import { PassthroughStore } from './PassthroughStore';
 import { Representation } from '../ldp/representation/Representation';
@@ -37,11 +38,12 @@ export class RepresentationConvertingStore extends PassthroughStore {
     if (!preferences.type) {
       return true;
     }
+    const contentType = representation.metadata.get(CONTENT_TYPE);
     return Boolean(
-      representation.metadata.contentType &&
+      contentType &&
       preferences.type.some((type): boolean =>
         type.weight > 0 &&
-        matchingMediaType(type.value, representation.metadata.contentType!)),
+        matchingMediaType(type.value, contentType.value)),
     );
   }
 }

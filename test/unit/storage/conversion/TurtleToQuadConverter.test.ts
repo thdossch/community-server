@@ -1,6 +1,8 @@
 import arrayifyStream from 'arrayify-stream';
+import { CONTENT_TYPE } from '../../../../src/util/MetadataTypes';
 import { Readable } from 'stream';
 import { Representation } from '../../../../src/ldp/representation/Representation';
+import { RepresentationMetadata } from '../../../../src/ldp/representation/RepresentationMetadata';
 import { RepresentationPreferences } from '../../../../src/ldp/representation/RepresentationPreferences';
 import { ResourceIdentifier } from '../../../../src/ldp/representation/ResourceIdentifier';
 import streamifyArray from 'streamify-array';
@@ -12,9 +14,11 @@ import { namedNode, triple } from '@rdfjs/data-model';
 describe('A TurtleToQuadConverter', (): void => {
   const converter = new TurtleToQuadConverter();
   const identifier: ResourceIdentifier = { path: 'path' };
+  const metadata = new RepresentationMetadata();
+  metadata.add(CONTENT_TYPE, 'text/turtle');
 
   it('can handle turtle to quad conversions.', async(): Promise<void> => {
-    const representation = { metadata: { contentType: 'text/turtle' }} as Representation;
+    const representation = { metadata } as Representation;
     const preferences: RepresentationPreferences = { type: [{ value: CONTENT_TYPE_QUADS, weight: 1 }]};
     await expect(converter.canHandle({ identifier, representation, preferences })).resolves.toBeUndefined();
   });
@@ -22,17 +26,16 @@ describe('A TurtleToQuadConverter', (): void => {
   it('converts turtle to quads.', async(): Promise<void> => {
     const representation = {
       data: streamifyArray([ '<http://test.com/s> <http://test.com/p> <http://test.com/o>.' ]),
-      metadata: { contentType: 'text/turtle' },
+      metadata,
     } as Representation;
     const preferences: RepresentationPreferences = { type: [{ value: CONTENT_TYPE_QUADS, weight: 1 }]};
     const result = await converter.handle({ identifier, representation, preferences });
     expect(result).toEqual({
       data: expect.any(Readable),
       dataType: DATA_TYPE_QUAD,
-      metadata: {
-        contentType: CONTENT_TYPE_QUADS,
-      },
+      metadata: expect.any(RepresentationMetadata),
     });
+    expect(result.metadata.get(CONTENT_TYPE)?.value).toEqual(CONTENT_TYPE_QUADS);
     await expect(arrayifyStream(result.data)).resolves.toEqualRdfQuadArray([ triple(
       namedNode('http://test.com/s'),
       namedNode('http://test.com/p'),
@@ -43,17 +46,16 @@ describe('A TurtleToQuadConverter', (): void => {
   it('throws an UnsupportedHttpError on invalid triple data.', async(): Promise<void> => {
     const representation = {
       data: streamifyArray([ '<http://test.com/s> <http://test.com/p> <http://test.co' ]),
-      metadata: { contentType: 'text/turtle' },
+      metadata,
     } as Representation;
     const preferences: RepresentationPreferences = { type: [{ value: CONTENT_TYPE_QUADS, weight: 1 }]};
     const result = await converter.handle({ identifier, representation, preferences });
     expect(result).toEqual({
       data: expect.any(Readable),
       dataType: DATA_TYPE_QUAD,
-      metadata: {
-        contentType: CONTENT_TYPE_QUADS,
-      },
+      metadata: expect.any(RepresentationMetadata),
     });
+    expect(result.metadata.get(CONTENT_TYPE)?.value).toEqual(CONTENT_TYPE_QUADS);
     await expect(arrayifyStream(result.data)).rejects.toThrow(UnsupportedHttpError);
   });
 });

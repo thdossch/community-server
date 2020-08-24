@@ -4,12 +4,14 @@ import { BasePermissionsExtractor } from '../../src/ldp/permissions/BasePermissi
 import { BodyParser } from '../../src/ldp/http/BodyParser';
 import { call } from '../util/Util';
 import { CompositeAsyncHandler } from '../../src/util/CompositeAsyncHandler';
+import { CONTENT_TYPE } from '../../src/util/MetadataTypes';
 import { DATA_TYPE_BINARY } from '../../src/util/ContentTypes';
 import { MockResponse } from 'node-mocks-http';
 import { Operation } from '../../src/ldp/operations/Operation';
 import { PermissionSet } from '../../src/ldp/permissions/PermissionSet';
 import { QuadToTurtleConverter } from '../../src/storage/conversion/QuadToTurtleConverter';
 import { RepresentationConvertingStore } from '../../src/storage/RepresentationConvertingStore';
+import { RepresentationMetadata } from '../../src/ldp/representation/RepresentationMetadata';
 import { ResourceStore } from '../../src/storage/ResourceStore';
 import { ResponseDescription } from '../../src/ldp/operations/ResponseDescription';
 import { SimpleAclAuthorizer } from '../../src/authorization/SimpleAclAuthorizer';
@@ -59,17 +61,16 @@ const setAcl = async(store: ResourceStore, id: string, permissions: PermissionSe
 
   acl.push('.');
 
+  const aclId = { path: `${id}.acl` };
+  const metadata = new RepresentationMetadata(id);
+  metadata.set(CONTENT_TYPE, 'text/turtle');
   const representation = {
     data: streamifyArray(acl),
     dataType: DATA_TYPE_BINARY,
-    metadata: {
-      raw: [],
-      profiles: [],
-      contentType: 'text/turtle',
-    },
+    metadata,
   };
 
-  return store.setRepresentation({ path: `${id}.acl` }, representation);
+  return store.setRepresentation(aclId, representation);
 };
 
 describe('A server with authorization', (): void => {

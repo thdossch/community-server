@@ -3,6 +3,7 @@ import { DATA_TYPE_BINARY } from '../util/ContentTypes';
 import { ensureTrailingSlash } from '../util/Util';
 import { NotFoundHttpError } from '../util/errors/NotFoundHttpError';
 import { Representation } from '../ldp/representation/Representation';
+import { RepresentationMetadata } from '../ldp/representation/RepresentationMetadata';
 import { ResourceIdentifier } from '../ldp/representation/ResourceIdentifier';
 import { ResourceStore } from './ResourceStore';
 import streamifyArray from 'streamify-array';
@@ -27,7 +28,7 @@ export class SimpleResourceStore implements ResourceStore {
       '': {
         dataType: DATA_TYPE_BINARY,
         data: streamifyArray([]),
-        metadata: { raw: [], profiles: []},
+        metadata: new RepresentationMetadata(base),
       },
     };
   }

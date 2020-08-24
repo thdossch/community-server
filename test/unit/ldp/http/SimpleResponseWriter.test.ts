@@ -1,5 +1,6 @@
+import { CONTENT_TYPE } from '../../../../src/util/MetadataTypes';
 import { EventEmitter } from 'events';
-import { Quad } from 'rdf-js';
+import { RepresentationMetadata } from '../../../../src/ldp/representation/RepresentationMetadata';
 import { ResponseDescription } from '../../../../src/ldp/operations/ResponseDescription';
 import { SimpleResponseWriter } from '../../../../src/ldp/http/SimpleResponseWriter';
 import streamifyArray from 'streamify-array';
@@ -33,10 +34,7 @@ describe('A SimpleResponseWriter', (): void => {
     const body = {
       data: streamifyArray([ '<http://test.com/s> <http://test.com/p> <http://test.com/o>.' ]),
       dataType: DATA_TYPE_BINARY,
-      metadata: {
-        raw: [] as Quad[],
-        profiles: [] as string[],
-      },
+      metadata: new RepresentationMetadata(),
     };
 
     response.on('end', (): void => {
@@ -51,14 +49,12 @@ describe('A SimpleResponseWriter', (): void => {
   });
 
   it('responds with a content-type if the metadata has it.', async(done): Promise<void> => {
+    const metadata = new RepresentationMetadata();
+    metadata.add(CONTENT_TYPE, 'text/turtle');
     const body = {
       data: streamifyArray([ '<http://test.com/s> <http://test.com/p> <http://test.com/o>.' ]),
       dataType: DATA_TYPE_BINARY,
-      metadata: {
-        raw: [] as Quad[],
-        profiles: [] as string[],
-        contentType: 'text/turtle',
-      },
+      metadata,
     };
 
     response.on('end', (): void => {
